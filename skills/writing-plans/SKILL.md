@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, and how to verify it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. Verification-first. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -53,11 +53,20 @@ This structure informs the task decomposition. Each task should produce self-con
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
+- "Inspect the existing helper this task extends" - step
+- "Implement the focused change" - step
+- "Add or update the targeted test/check" - step
+- "Run the targeted verification command" - step
 - "Commit" - step
+
+## Testing Strategy
+
+Plans are verification-first, not TDD-first.
+
+- **Feature work:** Specify the tests, smoke checks, build commands, or manual verification that prove the new behavior works. Do not force test-first steps.
+- **Bug fixes:** Start with reproducing the bug. Use `superpowers:test-driven-development` for the fix task so the regression fails before the fix and passes after it.
+- **Refactors:** Specify equivalence checks: existing tests, typecheck/build, and any focused smoke check that proves behavior did not change.
+- **Docs/config:** Specify the relevant render, validation, install, or command check.
 
 ## Plan Document Header
 
@@ -87,7 +96,18 @@ This structure informs the task decomposition. Each task should produce self-con
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Inspect existing patterns**
+
+Read `src/existing/module.py` and `tests/existing/test_module.py` to match the local API and test style.
+
+- [ ] **Step 2: Implement the focused change**
+
+```python
+def function(input):
+    return expected
+```
+
+- [ ] **Step 3: Add or update targeted verification**
 
 ```python
 def test_specific_behavior():
@@ -95,19 +115,7 @@ def test_specific_behavior():
     assert result == expected
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
-
-- [ ] **Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Run targeted verification**
 
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
@@ -134,7 +142,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact file paths always
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+- DRY, YAGNI, verification-first, frequent commits
 
 ## Self-Review
 

@@ -1,371 +1,166 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when fixing a bug, regression, failing test, or unexpected behavior before changing production code
 ---
 
-# Test-Driven Development (TDD)
+# Bug-Fix Test-Driven Development
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass.
+Use TDD for bug fixes and regressions: reproduce the failure, prove an automated test or repro catches it, make the smallest fix, then verify the failure stays fixed.
 
-**Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
+**Core principle:** A bug fix is trustworthy only when you have evidence that the old behavior failed and the new behavior passes.
 
-**Violating the letter of the rules is violating the spirit of the rules.**
+This skill is **not** the default workflow for new features. Feature work should follow the plan's verification strategy and `superpowers:verification-before-completion`.
 
 ## When to Use
 
-**Always:**
+**Use for:**
+- Bugs
+- Regressions
+- Failing tests
+- Unexpected behavior
+- Production defects
+- User-reported broken behavior
+
+**Do not use for:**
 - New features
-- Bug fixes
-- Refactoring
-- Behavior changes
+- Pure refactors
+- Planned behavior additions
+- Documentation-only changes
+- Configuration-only changes
 
-**Exceptions (ask your human partner):**
-- Throwaway prototypes
-- Generated code
-- Configuration files
+If the user explicitly asks for TDD on feature work, follow the user's instruction.
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
-
-## The Iron Law
+## The Bug-Fix Rule
 
 ```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+NO BUG FIX WITHOUT A FAILING REPRODUCTION FIRST
 ```
 
-Write code before the test? Delete it. Start over.
+For automated codebases, the reproduction should be an automated regression test. If no test harness can exercise the bug, use the smallest reproducible script or documented manual repro and explain why automation is not practical.
 
-**No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
+Already wrote the fix before the regression test? Prove the test catches the original bug by temporarily reverting the fix, running the test and seeing it fail, then restoring the fix and seeing it pass.
 
-Implement fresh from tests. Period.
-
-## Red-Green-Refactor
+## Reproduce-Fix-Verify
 
 ```dot
-digraph tdd_cycle {
-    rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
+digraph bugfix_tdd {
+    reproduce [label="REPRODUCE\nWrite or identify failing case", shape=box, style=filled, fillcolor="#ffcccc"];
+    verify_fail [label="Fails for expected reason?", shape=diamond];
+    fix [label="FIX\nSmallest root-cause change", shape=box, style=filled, fillcolor="#ccffcc"];
+    verify_pass [label="Passes now?", shape=diamond];
+    broader [label="BROADEN\nRun relevant checks", shape=box, style=filled, fillcolor="#ccccff"];
+    done [label="Report evidence", shape=ellipse];
 
-    red -> verify_red;
-    verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
-    green -> verify_green;
-    verify_green -> refactor [label="yes"];
-    verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
+    reproduce -> verify_fail;
+    verify_fail -> fix [label="yes"];
+    verify_fail -> reproduce [label="no"];
+    fix -> verify_pass;
+    verify_pass -> broader [label="yes"];
+    verify_pass -> fix [label="no"];
+    broader -> done;
 }
 ```
 
-### RED - Write Failing Test
+### 1. Reproduce the Bug
 
-Write one minimal test showing what should happen.
+Create one minimal failing case that demonstrates the reported broken behavior.
 
-<Good>
+Good regression tests:
+- Exercise real code
+- Fail without the fix
+- Fail for the bug, not for setup errors
+- Describe the behavior users care about
+
 ```typescript
-test('retries failed operations 3 times', async () => {
-  let attempts = 0;
-  const operation = () => {
-    attempts++;
-    if (attempts < 3) throw new Error('fail');
-    return 'success';
-  };
+test('rejects an empty email during signup', async () => {
+  const result = await submitSignup({ email: '', password: 'secret123' });
 
-  const result = await retryOperation(operation);
-
-  expect(result).toBe('success');
-  expect(attempts).toBe(3);
+  expect(result.ok).toBe(false);
+  expect(result.error).toBe('Email is required');
 });
 ```
-Clear name, tests real behavior, one thing
-</Good>
 
-<Bad>
-```typescript
-test('retry works', async () => {
-  const mock = jest.fn()
-    .mockRejectedValueOnce(new Error())
-    .mockRejectedValueOnce(new Error())
-    .mockResolvedValueOnce('success');
-  await retryOperation(mock);
-  expect(mock).toHaveBeenCalledTimes(3);
-});
-```
-Vague name, tests mock not code
-</Bad>
+### 2. Verify the Failure
 
-**Requirements:**
-- One behavior
-- Clear name
-- Real code (no mocks unless unavoidable)
-
-### Verify RED - Watch It Fail
-
-**MANDATORY. Never skip.**
+Run the narrowest command that exercises the reproduction.
 
 ```bash
-npm test path/to/test.test.ts
+npm test signup.test.ts -- --runInBand
 ```
 
 Confirm:
-- Test fails (not errors)
-- Failure message is expected
-- Fails because feature missing (not typos)
+- The test fails
+- The failure is expected
+- The failure explains the original bug
 
-**Test passes?** You're testing existing behavior. Fix test.
+If the test passes, it does not reproduce the bug. Fix the test or find a better reproduction before changing production code.
 
-**Test errors?** Fix error, re-run until it fails correctly.
+### 3. Fix the Root Cause
 
-### GREEN - Minimal Code
+Make the smallest code change that addresses the confirmed root cause.
 
-Write simplest code to pass the test.
+Do not:
+- Bundle unrelated refactors
+- Add speculative improvements
+- Change multiple suspected causes at once
+- Weaken the regression test to make it pass
 
-<Good>
-```typescript
-async function retryOperation<T>(fn: () => Promise<T>): Promise<T> {
-  for (let i = 0; i < 3; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      if (i === 2) throw e;
-    }
-  }
-  throw new Error('unreachable');
-}
-```
-Just enough to pass
-</Good>
+### 4. Verify the Fix
 
-<Bad>
-```typescript
-async function retryOperation<T>(
-  fn: () => Promise<T>,
-  options?: {
-    maxRetries?: number;
-    backoff?: 'linear' | 'exponential';
-    onRetry?: (attempt: number) => void;
-  }
-): Promise<T> {
-  // YAGNI
-}
-```
-Over-engineered
-</Bad>
+Run the reproduction again. It must pass.
 
-Don't add features, refactor other code, or "improve" beyond the test.
+Then run the relevant surrounding checks:
+- The affected test file or package test
+- Any related integration or e2e test
+- Build/typecheck/lint if the touched area requires it
 
-### Verify GREEN - Watch It Pass
+## If You Cannot Automate the Repro
 
-**MANDATORY.**
+Use a manual or script-based repro only when automation is not practical.
 
-```bash
-npm test path/to/test.test.ts
-```
+Document:
+- Exact steps to reproduce
+- Expected broken result before the fix
+- Actual fixed result after the fix
+- Why this could not be automated
 
-Confirm:
-- Test passes
-- Other tests still pass
-- Output pristine (no errors, warnings)
+Still prefer an automated test whenever the codebase gives you a reasonable path.
 
-**Test fails?** Fix code, not test.
+## Relationship to Debugging
 
-**Other tests fail?** Fix now.
-
-### REFACTOR - Clean Up
-
-After green only:
-- Remove duplication
-- Improve names
-- Extract helpers
-
-Keep tests green. Don't add behavior.
-
-### Repeat
-
-Next failing test for next feature.
-
-## Good Tests
-
-| Quality | Good | Bad |
-|---------|------|-----|
-| **Minimal** | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
-| **Clear** | Name describes behavior | `test('test1')` |
-| **Shows intent** | Demonstrates desired API | Obscures what code should do |
-
-## Why Order Matters
-
-**"I'll write tests after to verify it works"**
-
-Tests written after code pass immediately. Passing immediately proves nothing:
-- Might test wrong thing
-- Might test implementation, not behavior
-- Might miss edge cases you forgot
-- You never saw it catch the bug
-
-Test-first forces you to see the test fail, proving it actually tests something.
-
-**"I already manually tested all the edge cases"**
-
-Manual testing is ad-hoc. You think you tested everything but:
-- No record of what you tested
-- Can't re-run when code changes
-- Easy to forget cases under pressure
-- "It worked when I tried it" ≠ comprehensive
-
-Automated tests are systematic. They run the same way every time.
-
-**"Deleting X hours of work is wasteful"**
-
-Sunk cost fallacy. The time is already gone. Your choice now:
-- Delete and rewrite with TDD (X more hours, high confidence)
-- Keep it and add tests after (30 min, low confidence, likely bugs)
-
-The "waste" is keeping code you can't trust. Working code without real tests is technical debt.
-
-**"TDD is dogmatic, being pragmatic means adapting"**
-
-TDD IS pragmatic:
-- Finds bugs before commit (faster than debugging after)
-- Prevents regressions (tests catch breaks immediately)
-- Documents behavior (tests show how to use code)
-- Enables refactoring (change freely, tests catch breaks)
-
-"Pragmatic" shortcuts = debugging in production = slower.
-
-**"Tests after achieve the same goals - it's spirit not ritual"**
-
-No. Tests-after answer "What does this do?" Tests-first answer "What should this do?"
-
-Tests-after are biased by your implementation. You test what you built, not what's required. You verify remembered edge cases, not discovered ones.
-
-Tests-first force edge case discovery before implementing. Tests-after verify you remembered everything (you didn't).
-
-30 minutes of tests after ≠ TDD. You get coverage, lose proof tests work.
+For unclear bugs, use `superpowers:systematic-debugging` first. Once the root cause is understood, use this skill to lock in the fix with a failing reproduction and passing verification.
 
 ## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
-| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
-| "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
-| "TDD will slow me down" | TDD faster than debugging. Pragmatic = test-first. |
-| "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
-| "Existing code has no tests" | You're improving it. Add tests for existing code. |
+| "I can see the bug in the code" | Seeing a symptom is not proof the fix works. Reproduce it. |
+| "I'll add the regression test after" | Then you never proved the test catches the old bug. |
+| "This is too small to test" | Small fixes regress too. Use the smallest repro. |
+| "The existing failing test is enough" | Only if it fails for the same user-visible bug. |
+| "Manual testing is faster" | Manual repro is acceptable only when automation is not practical. |
+| "I already fixed it" | Temporarily revert or otherwise prove the repro fails without the fix. |
 
-## Red Flags - STOP and Start Over
+## Red Flags
 
-- Code before test
-- Test after implementation
-- Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- Rationalizing "just this once"
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
-- "It's about spirit not ritual"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "TDD is dogmatic, I'm being pragmatic"
-- "This is different because..."
-
-**All of these mean: Delete code. Start over with TDD.**
-
-## Example: Bug Fix
-
-**Bug:** Empty email accepted
-
-**RED**
-```typescript
-test('rejects empty email', async () => {
-  const result = await submitForm({ email: '' });
-  expect(result.error).toBe('Email required');
-});
-```
-
-**Verify RED**
-```bash
-$ npm test
-FAIL: expected 'Email required', got undefined
-```
-
-**GREEN**
-```typescript
-function submitForm(data: FormData) {
-  if (!data.email?.trim()) {
-    return { error: 'Email required' };
-  }
-  // ...
-}
-```
-
-**Verify GREEN**
-```bash
-$ npm test
-PASS
-```
-
-**REFACTOR**
-Extract validation for multiple fields if needed.
+- Starting a bug fix without reproducing the bug
+- Fixing several suspected causes at once
+- A regression test that passes before the fix
+- A failure caused by test setup rather than the bug
+- Removing or weakening assertions to get green
+- Claiming "fixed" without fresh verification output
 
 ## Verification Checklist
 
-Before marking work complete:
+Before reporting the bug fixed:
 
-- [ ] Every new function/method has a test
-- [ ] Watched each test fail before implementing
-- [ ] Each test failed for expected reason (feature missing, not typo)
-- [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-- [ ] Output pristine (no errors, warnings)
-- [ ] Tests use real code (mocks only if unavoidable)
-- [ ] Edge cases and errors covered
+- [ ] Reproduction exists
+- [ ] Reproduction failed for the expected reason before the fix
+- [ ] Fix is scoped to the root cause
+- [ ] Reproduction passes after the fix
+- [ ] Relevant surrounding checks pass
+- [ ] Verification evidence is included in the report
 
-Can't check all boxes? You skipped TDD. Start over.
-
-## When Stuck
-
-| Problem | Solution |
-|---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
-| Test too complicated | Design too complicated. Simplify interface. |
-| Must mock everything | Code too coupled. Use dependency injection. |
-| Test setup huge | Extract helpers. Still complex? Simplify design. |
-
-## Debugging Integration
-
-Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
-
-Never fix bugs without a test.
-
-## Testing Anti-Patterns
-
-When adding mocks or test utilities, read @testing-anti-patterns.md to avoid common pitfalls:
-- Testing mock behavior instead of real behavior
-- Adding test-only methods to production classes
-- Mocking without understanding dependencies
-
-## Final Rule
-
-```
-Production code → test exists and failed first
-Otherwise → not TDD
-```
-
-No exceptions without your human partner's permission.
+Can't check these boxes? The fix is not proven yet.

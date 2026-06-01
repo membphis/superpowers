@@ -171,7 +171,7 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 After the user approves the persisted SPEC, offer two paths:
 
-1. **Direct implementation** - start development from the approved SPEC without writing a separate plan. Use this for small, low-risk changes with clear scope. Create a concise task checklist, follow applicable implementation skills such as test-driven-development, and verify before completion.
+1. **Direct implementation** - start development from the approved SPEC without writing a separate plan. Use this for small, low-risk changes with clear scope. Create a concise task checklist, define the verification approach up front, and verify before completion.
 2. **Write implementation plan** - invoke the writing-plans skill to create a detailed implementation plan. If the SPEC was persisted to a GitHub issue, tell writing-plans to post the plan as a comment on the issue.
 
 Recommend writing a plan for large, high-risk, multi-file, ambiguous, or long-running work. If the user chooses direct implementation, do not create a plan file.

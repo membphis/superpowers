@@ -8,7 +8,7 @@ Tests must verify real behavior, not mock behavior. Mocks are a means to isolate
 
 **Core principle:** Test what the code does, not what the mocks do.
 
-**Following strict TDD prevents these anti-patterns.**
+**Bug-fix TDD helps prevent these anti-patterns by proving tests catch real behavior.**
 
 ## The Iron Laws
 
@@ -225,27 +225,28 @@ BEFORE creating mock responses:
   If uncertain: Include all documented fields
 ```
 
-## Anti-Pattern 5: Integration Tests as Afterthought
+## Anti-Pattern 5: Regression Coverage as Afterthought
 
 **The violation:**
 ```
-✅ Implementation complete
+✅ Bug fix complete
 ❌ No tests written
 "Ready for testing"
 ```
 
 **Why this is wrong:**
 - Testing is part of implementation, not optional follow-up
-- TDD would have caught this
-- Can't claim complete without tests
+- Bug-fix TDD would have caught this
+- Can't claim a bug is fixed without a reproduction and verification
 
 **The fix:**
 ```
-TDD cycle:
-1. Write failing test
-2. Implement to pass
-3. Refactor
-4. THEN claim complete
+Bug-fix workflow:
+1. Reproduce the bug
+2. Verify the reproduction fails for the expected reason
+3. Implement the smallest fix
+4. Verify the reproduction passes
+5. THEN claim fixed
 ```
 
 ## When Mocks Become Too Complex
@@ -260,15 +261,15 @@ TDD cycle:
 
 **Consider:** Integration tests with real components often simpler than complex mocks
 
-## TDD Prevents These Anti-Patterns
+## Bug-Fix TDD Helps Prevent These Anti-Patterns
 
-**Why TDD helps:**
-1. **Write test first** → Forces you to think about what you're actually testing
-2. **Watch it fail** → Confirms test tests real behavior, not mocks
-3. **Minimal implementation** → No test-only methods creep in
-4. **Real dependencies** → You see what the test actually needs before mocking
+**Why bug-fix TDD helps:**
+1. **Reproduce the bug first** → Forces you to test the broken behavior
+2. **Verify the failure** → Confirms the test exercises real behavior, not mocks
+3. **Minimal fix** → No test-only methods creep in
+4. **Real dependencies** → You see what the regression actually needs before mocking
 
-**If you're testing mock behavior, you violated TDD** - you added mocks without watching test fail against real code first.
+**If your regression test only verifies mock behavior, it does not prove the bug is fixed** - test real behavior or question why the mock is needed.
 
 ## Quick Reference
 
@@ -278,7 +279,7 @@ TDD cycle:
 | Test-only methods in production | Move to test utilities |
 | Mock without understanding | Understand dependencies first, mock minimally |
 | Incomplete mocks | Mirror real API completely |
-| Tests as afterthought | TDD - tests first |
+| Tests as afterthought | Reproduce the bug before fixing it |
 | Over-complex mocks | Consider integration tests |
 
 ## Red Flags
@@ -294,6 +295,6 @@ TDD cycle:
 
 **Mocks are tools to isolate, not things to test.**
 
-If TDD reveals you're testing mock behavior, you've gone wrong.
+If the regression test reveals you're testing mock behavior, you've gone wrong.
 
 Fix: Test real behavior or question why you're mocking at all.

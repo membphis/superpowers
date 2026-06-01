@@ -17,14 +17,14 @@ LLMs respond to the same persuasion principles as humans. Understanding this psy
 - Eliminates decision fatigue and rationalization
 
 **When to use:**
-- Discipline-enforcing skills (TDD, verification requirements)
+- Discipline-enforcing skills (bug-fix TDD, verification requirements)
 - Safety-critical practices
 - Established best practices
 
 **Example:**
 ```markdown
-✅ Write code before test? Delete it. Start over. No exceptions.
-❌ Consider writing tests first when feasible.
+✅ No completion claims without fresh verification evidence. No exceptions.
+❌ Consider verifying when feasible.
 ```
 
 ### 2. Commitment

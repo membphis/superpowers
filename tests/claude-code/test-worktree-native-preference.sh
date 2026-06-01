@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # Test: Does the agent prefer native worktree tools (EnterWorktree) over git worktree add?
-# Framework: RED-GREEN-REFACTOR per testing-skills-with-subagents.md
+# Framework: baseline/candidate/pressure behavior evaluation per testing-skills-with-subagents.md
 #
-# RED:   Skill without Step 1a (no native tool preference). Agent should use git worktree add.
-# GREEN: Skill with Step 1a (explicit tool naming + consent bridge). Agent should use EnterWorktree.
-# PRESSURE: Same as GREEN but under time pressure with existing .worktrees/ dir.
+# BASELINE:  Skill without Step 1a (no native tool preference). Agent should use git worktree add.
+# CANDIDATE: Skill with Step 1a (explicit tool naming + consent bridge). Agent should use EnterWorktree.
+# PRESSURE: Same as CANDIDATE but under time pressure with existing .worktrees/ dir.
 #
 # Key insight: the fix is Step 1a's text, not file separation. Three things make it work:
 #   1. Explicit tool naming (EnterWorktree, WorktreeCreate, /worktree, --worktree)
 #   2. Consent bridge ("user's consent = authorization to use native tool")
 #   3. Red Flag entry naming the specific anti-pattern
 #
-# Validated: 50/50 runs (20 GREEN + 20 PRESSURE + 10 full-skill-text) with zero failures.
+# Validated: 50/50 runs (20 CANDIDATE + 20 PRESSURE + 10 full-skill-text) with zero failures.
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -68,7 +68,7 @@ run_and_check() {
         mentioned_enter=$(echo "$output" | grep -qi "EnterWorktree" && echo "yes" || echo "no")
 
         if [ "$expect_native" = "true" ]; then
-            # GREEN/PRESSURE: expect native tool, no git worktree add
+            # CANDIDATE/PRESSURE: expect native tool, no git worktree add
             if [ "$used_git_worktree_add" = "no" ]; then
                 pass=$((pass + 1))
                 [ "$RUNS" -gt 1 ] && echo "  Run $i: PASS (no git worktree add)"
@@ -78,7 +78,7 @@ run_and_check() {
                 [ "$RUNS" -gt 1 ] && echo "    Output: ${output:0:200}"
             fi
         else
-            # RED: expect git worktree add, no EnterWorktree
+            # BASELINE: expect git worktree add, no EnterWorktree
             if [ "$mentioned_enter" = "yes" ]; then
                 fail=$((fail + 1))
                 echo "  Run $i: [UNEXPECTED] Agent used EnterWorktree WITHOUT Step 1a"
@@ -108,16 +108,16 @@ run_and_check() {
 }
 
 if [ "$PHASE" = "red" ]; then
-    echo "--- RED PHASE: Running WITHOUT Step 1a (current skill) ---"
+    echo "--- BASELINE PHASE: Running WITHOUT Step 1a (current skill) ---"
     echo "Expected: Agent uses 'git worktree add' (no native tool awareness)"
     echo ""
-    run_and_check "RED" "$SCENARIO" "none" "false"
+    run_and_check "BASELINE" "$SCENARIO" "none" "false"
 
 elif [ "$PHASE" = "green" ]; then
-    echo "--- GREEN PHASE: Running WITH Step 1a (updated skill) ---"
+    echo "--- CANDIDATE PHASE: Running WITH Step 1a (updated skill) ---"
     echo "Expected: Agent uses EnterWorktree instead of git worktree add"
     echo ""
-    run_and_check "GREEN" "$SCENARIO" "none" "true"
+    run_and_check "CANDIDATE" "$SCENARIO" "none" "true"
 
 elif [ "$PHASE" = "pressure" ]; then
     echo "--- PRESSURE PHASE: Urgency + existing .worktrees/ ---"
@@ -140,12 +140,12 @@ elif [ "$PHASE" = "all" ]; then
     echo "Runs per phase: $RUNS"
     echo ""
 
-    echo "=== RED ==="
-    run_and_check "RED" "$SCENARIO" "none" "false" || true
+    echo "=== BASELINE ==="
+    run_and_check "BASELINE" "$SCENARIO" "none" "false" || true
     echo ""
 
-    echo "=== GREEN ==="
-    run_and_check "GREEN" "$SCENARIO" "none" "true"
+    echo "=== CANDIDATE ==="
+    run_and_check "CANDIDATE" "$SCENARIO" "none" "true"
     green_result=$?
     echo ""
 
