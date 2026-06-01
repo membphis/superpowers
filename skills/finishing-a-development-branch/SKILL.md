@@ -1,21 +1,64 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete and you need to finish integration, mark a draft PR ready, or choose merge/PR/cleanup handling
 ---
 
 # Finishing a Development Branch
 
 ## Overview
 
-Guide completion of development work by presenting clear options and handling chosen workflow.
+Guide completion of development work by verifying readiness, marking draft PRs ready, or presenting clear integration options.
 
-**Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify readiness → If draft PR exists, mark ready → Otherwise present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
 ## The Process
 
-### Step 1: Verify Tests
+### Step 1: Check for Existing PR
+
+First check whether the current branch already has a PR:
+
+```bash
+gh pr view --json url,isDraft,state,statusCheckRollup 2>/dev/null
+```
+
+**If a draft PR exists:** skip the option menu and go to Step 2 final readiness check.
+
+**If a non-draft PR exists:** run Step 2 final readiness check and report the PR is already ready if all checks pass.
+
+**If no PR exists:** continue through the standard branch finishing menu after verifying tests.
+
+### Step 2: Final Readiness Check
+
+Use this final readiness check before marking a draft PR ready or before offering merge/PR completion options:
+
+- No uncommitted changes (`git status --short` is empty)
+- Cheap local smoke checks still pass
+- Required project tests pass or the user explicitly accepted relying on CI
+- Draft PR CI is green when a PR exists
+- Consolidated spec reviewer approved
+- Code quality reviewer approved
+- No unresolved blocking reviewer findings remain
+- PR body links the issue/SPEC or otherwise explains the requirement source
+
+For a draft PR, verify CI with the available GitHub tooling, such as:
+
+```bash
+gh pr checks --watch
+```
+
+If any readiness item fails, stop and report the exact blocker. Do not mark PR ready.
+
+**If a draft PR passes readiness:** mark it ready:
+
+```bash
+gh pr ready
+```
+
+Then report the PR URL and stop. Do not present the standard option menu.
+
+### Step 3: Verify Tests
 
 **Before presenting options, verify tests pass:**
 
@@ -33,11 +76,11 @@ Tests failing (<N> failures). Must fix before completing:
 Cannot proceed with merge/PR until tests pass.
 ```
 
-Stop. Don't proceed to Step 2.
+Stop. Don't proceed to Step 4.
 
-**If tests pass:** Continue to Step 2.
+**If tests pass:** Continue to Step 4.
 
-### Step 2: Detect Environment
+### Step 4: Detect Environment
 
 **Determine workspace state before presenting options:**
 
@@ -51,10 +94,10 @@ This determines which menu to show and how cleanup works:
 | State | Menu | Cleanup |
 |-------|------|---------|
 | `GIT_DIR == GIT_COMMON` (normal repo) | Standard 4 options | No worktree to clean up |
-| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Provenance-based (see Step 6) |
+| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Provenance-based (see Step 8) |
 | `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | No cleanup (externally managed) |
 
-### Step 3: Determine Base Branch
+### Step 5: Determine Base Branch
 
 ```bash
 # Try common base branches
@@ -63,7 +106,7 @@ git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 
 Or ask: "This branch split from main - is that correct?"
 
-### Step 4: Present Options
+### Step 6: Present Options
 
 **Normal repo and named-branch worktree — present exactly these 4 options:**
 
@@ -92,7 +135,7 @@ Which option?
 
 **Don't add explanation** - keep options concise.
 
-### Step 5: Execute Choice
+### Step 7: Execute Choice
 
 #### Option 1: Merge Locally
 
@@ -109,10 +152,10 @@ git merge <feature-branch>
 # Verify tests on merged result
 <test command>
 
-# Only after merge succeeds: cleanup worktree (Step 6), then delete branch
+# Only after merge succeeds: cleanup worktree (Step 8), then delete branch
 ```
 
-Then: Cleanup worktree (Step 6), then delete branch:
+Then: Cleanup worktree (Step 8), then delete branch:
 
 ```bash
 git branch -d <feature-branch>
@@ -124,8 +167,8 @@ git branch -d <feature-branch>
 # Push branch
 git push -u origin <feature-branch>
 
-# Create PR
-gh pr create --title "<title>" --body "$(cat <<'EOF'
+# Create draft PR so CI can start before human review
+gh pr create --draft --title "<title>" --body "$(cat <<'EOF'
 ## Summary
 <2-3 bullets of what changed>
 
@@ -136,6 +179,7 @@ EOF
 ```
 
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
+After the draft PR is created, run the final readiness check before marking it ready.
 
 #### Option 3: Keep As-Is
 
@@ -163,12 +207,12 @@ MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-tople
 cd "$MAIN_ROOT"
 ```
 
-Then: Cleanup worktree (Step 6), then force-delete branch:
+Then: Cleanup worktree (Step 8), then force-delete branch:
 ```bash
 git branch -D <feature-branch>
 ```
 
-### Step 6: Cleanup Workspace
+### Step 8: Cleanup Workspace
 
 **Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
@@ -205,6 +249,10 @@ git worktree prune  # Self-healing: clean up any stale registrations
 **Skipping test verification**
 - **Problem:** Merge broken code, create failing PR
 - **Fix:** Always verify tests before offering options
+
+**Marking draft PR ready too early**
+- **Problem:** CI, spec review, or code quality review still has blocking issues
+- **Fix:** Run the final readiness check and stop on any blocker
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" is ambiguous

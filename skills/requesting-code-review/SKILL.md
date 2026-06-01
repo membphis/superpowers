@@ -5,18 +5,19 @@ description: Use when completing tasks, implementing major features, or before m
 
 # Requesting Code Review
 
-Dispatch a code reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Dispatch a code reviewer subagent to review a completed task, feature, branch, or draft PR. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
 
-**Core principle:** Review early, review often.
+**Core principle:** Review at the right boundary. Use consolidated review when implementation has been intentionally batched before PR/CI feedback.
 
 ## When to Request Review
 
 **Mandatory:**
-- After each task in subagent-driven development
 - After completing major feature
+- Before marking a draft PR ready
 - Before merge to main
 
 **Optional but valuable:**
+- After each task when the task is risky or future tasks depend on its correctness
 - When stuck (fresh perspective)
 - Before refactoring (baseline check)
 - After fixing complex bug
@@ -28,6 +29,8 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
+
+For consolidated review, use the base branch or PR base as `BASE_SHA` and the current branch head as `HEAD_SHA`.
 
 **2. Dispatch code reviewer subagent:**
 
@@ -45,7 +48,7 @@ Use Task tool with `general-purpose` type, fill template at `code-reviewer.md`
 - Note Minor issues for later
 - Push back if reviewer is wrong (with reasoning)
 
-## Example
+## Example: Task Review
 
 ```
 [Just completed Task 2: Add verification function]
@@ -72,12 +75,36 @@ You: [Fix progress indicators]
 [Continue to Task 3]
 ```
 
+## Example: Consolidated Review
+
+```
+[All implementer tasks complete, draft PR open, CI running]
+
+BASE_SHA=$(git merge-base HEAD origin/dev)
+HEAD_SHA=$(git rev-parse HEAD)
+
+[Dispatch code reviewer subagent]
+  DESCRIPTION: Complete draft PR implementation for issue-backed brainstorming specs
+  PLAN_OR_REQUIREMENTS: GitHub issue SPEC and implementation plan comment
+  BASE_SHA: 7492f86
+  HEAD_SHA: d44c346
+
+[Subagent returns]:
+  Strengths: Clear flow, well-scoped changes
+  Issues:
+    Important: Missing failure path for unavailable GitHub CLI
+  Assessment: Ready with fixes
+
+You: [Fix issue, rerun affected checks, push to draft PR, re-review affected area]
+```
+
 ## Integration with Workflows
 
 **Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
+- Default fork flow: run consolidated review after all implementer tasks finish and the draft PR is open
+- Review the full branch/PR diff against the SPEC and plan
+- Fix blocking findings, rerun affected local checks, push fixes, and re-review affected areas
+- Use per-task review only when a task is high-risk or later tasks would compound mistakes
 
 **Executing Plans:**
 - Review after each task or at natural checkpoints

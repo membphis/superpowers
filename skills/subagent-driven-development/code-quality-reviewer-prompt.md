@@ -1,25 +1,25 @@
 # Code Quality Reviewer Prompt Template
 
-Use this template when dispatching a code quality reviewer subagent.
+Use this template when dispatching a consolidated code quality reviewer subagent after the draft PR is open.
 
-**Purpose:** Verify implementation is well-built (clean, tested, maintainable)
+**Purpose:** Verify the branch/PR implementation is well-built (clean, tested, maintainable)
 
-**Only dispatch after spec compliance review passes.**
+This can run while CI and consolidated spec review are in progress. If later spec fixes substantially change the implementation, re-run code quality review for the affected area.
 
 ```
 Task tool (general-purpose):
   Use template at requesting-code-review/code-reviewer.md
 
-  DESCRIPTION: [task summary, from implementer's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  BASE_SHA: [commit before task]
+  DESCRIPTION: [summary of complete branch/PR implementation]
+  PLAN_OR_REQUIREMENTS: [approved SPEC and implementation plan]
+  BASE_SHA: [base branch or PR base]
   HEAD_SHA: [current commit]
 ```
 
 **In addition to standard code quality concerns, the reviewer should check:**
 - Does each file have one clear responsibility with a well-defined interface?
 - Are units decomposed so they can be understood and tested independently?
-- Is the implementation following the file structure from the plan?
+- Is the implementation following the file structure and boundaries from the plan?
 - Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
 
 **Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
