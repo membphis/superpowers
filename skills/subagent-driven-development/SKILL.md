@@ -107,18 +107,30 @@ CI and reviewer subagents are both review mechanisms. CI checks mechanical facts
 
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Prefer smarter implementer subagents while still considering cost and latency. Bad implementation work is more expensive than a stronger model.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**Match the current main session model family for stronger implementers.** The main session's large model is the default reference point:
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+- If the current session is Codex, use a strong Codex model for development subagents when a large model is appropriate.
+- If the current session is Claude Code, use Sonnet for development subagents when a large model is appropriate.
+- If the current session uses another model family, prefer that family's strong coding model unless there is a clear reason to switch.
 
-**Architecture, design, and review tasks**: use the most capable available model.
+When dispatching subagents with a different or explicitly selected model, enable that model's maximum available thinking/reasoning effort. Do this for strong development subagents and for reviewer subagents; the point of choosing a stronger model is to let it think fully.
+
+**Prefer the smarter model for implementation by default when:**
+- The task touches multiple files
+- The task changes shared behavior, public APIs, auth, persistence, build/release, or CI
+- The task requires reading unfamiliar code or making design judgments
+- A wrong implementation would create expensive review or CI churn
+
+**Use cheaper/faster models only for truly mechanical tasks** with complete plan steps, isolated files, and low blast radius.
+
+**Architecture, design, consolidated spec review, and code quality review tasks**: use the most capable available model with maximum available thinking/reasoning effort.
 
 **Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+- Touches 1 isolated file with complete instructions and obvious tests → cheaper/faster model acceptable
+- Touches 2+ files or has integration concerns → strong model from current main session family
+- Requires design judgment, broad codebase understanding, or reviewer authority → most capable available model
 
 ## Handling Implementer Status
 
