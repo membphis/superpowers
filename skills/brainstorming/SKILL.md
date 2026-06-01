@@ -26,9 +26,9 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
+6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope before persisting (see below)
+7. **Persist spec** — update/create GitHub issue or write local Markdown fallback (see After the Design)
+8. **User reviews persisted spec** — ask user to review the issue or spec file before proceeding
 9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
@@ -42,9 +42,9 @@ digraph brainstorming {
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
+    "Persist spec\n(issue or local Markdown)" [shape=box];
+    "User reviews persisted spec?" [shape=diamond];
     "Invoke writing-plans skill" [shape=doublecircle];
 
     "Explore project context" -> "Visual questions ahead?";
@@ -55,11 +55,11 @@ digraph brainstorming {
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User approves design?" -> "Spec self-review\n(fix inline)" [label="yes"];
+    "Spec self-review\n(fix inline)" -> "Persist spec\n(issue or local Markdown)";
+    "Persist spec\n(issue or local Markdown)" -> "User reviews persisted spec?";
+    "User reviews persisted spec?" -> "Spec self-review\n(fix inline)" [label="changes requested"];
+    "User reviews persisted spec?" -> "Invoke writing-plans skill" [label="approved"];
 }
 ```
 
@@ -106,15 +106,48 @@ digraph brainstorming {
 
 ## After the Design
 
-**Documentation:**
+**Spec Persistence:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+First, write the validated design (SPEC) using the existing design-doc format. Use elements-of-style:writing-clearly-and-concisely skill if available. Then run Spec Self-Review before writing the SPEC anywhere.
+
+Choose the persistence destination:
+
+- If the original user input was a GitHub issue URL, update that issue.
+- If the original user input was not a GitHub issue URL, ask whether to create a GitHub issue or write local Markdown.
+- If the user chooses local Markdown, use the local Markdown spec flow below.
+
+GitHub issue creation:
+
+1. Infer the target GitHub repository from the current repo's GitHub remote.
+2. If the remote is missing, non-GitHub, or ambiguous, ask the user for the target repository.
+3. Generate an issue title from the SPEC topic.
+4. Show the target repository, operation, title, and a brief summary of the SPEC body.
+5. Ask for confirmation before creating or updating a remote issue.
+6. Create the issue with the full SPEC as the issue body.
+
+GitHub issue updates:
+
+1. Show the issue URL, operation, and a brief summary of the replacement SPEC body.
+2. Ask for confirmation before creating or updating a remote issue.
+3. Then replace the issue body with the full SPEC.
+4. Then add a short comment summarizing the main changes from this brainstorming round.
+
+The issue body is always the current SPEC. Comments are only a compact change log; they must not replace the body or duplicate the entire SPEC.
+
+GitHub tooling:
+
+- Use whatever write-capable GitHub tool exists in the environment, such as GitHub CLI, GitHub MCP, or harness-provided issue tooling.
+- If no write-capable GitHub tool is available, or if authentication, permission, network, repository, or issue writes fail, explain the failure and fall back to the local Markdown spec flow unless the user chooses to stop.
+- Never claim that an issue was created or updated unless the write operation succeeded.
+
+Local Markdown spec flow:
+
+- Write the validated SPEC to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
-- Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
 **Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
+Before persisting the SPEC to a GitHub issue or local Markdown, look at it with fresh eyes:
 
 1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
@@ -124,9 +157,9 @@ After writing the spec document, look at it with fresh eyes:
 Fix any issues inline. No need to re-review — just fix and move on.
 
 **User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
+After the spec review loop passes and the SPEC has been persisted, ask the user to review the persisted spec before proceeding:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Spec persisted to `<issue-url-or-path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
