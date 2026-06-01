@@ -15,8 +15,25 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
-- (User preferences for plan location override this default)
+**Default plan location:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+- (User preferences for plan destination override this default)
+- If invoked from an approved SPEC stored in a GitHub issue, comment the plan on that issue instead of writing a local plan file, unless the user asks for local Markdown.
+
+## Plan Persistence Destination
+
+Before writing the plan, identify where it should be persisted:
+
+- If the user came from an issue-backed brainstorming flow and chose "Write implementation plan", write the complete plan and post it as a comment on the issue.
+- If the user provided a local SPEC file or asked for local Markdown, write the plan to `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`.
+- If the destination is unclear, ask whether to comment the plan on the issue or write local Markdown.
+
+For issue comments:
+
+1. Keep the issue body as the SPEC; do not overwrite it with the plan.
+2. Show the target issue and ask for confirmation before posting the plan comment.
+3. Include the complete implementation plan in one comment when possible.
+4. If the GitHub write fails, explain the failure and ask whether to retry, write local Markdown, or stop.
+5. Do not claim the plan was posted unless the issue comment write succeeded.
 
 ## Scope Check
 
@@ -133,9 +150,9 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After persisting the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+**"Plan complete and persisted to `<issue-url-or-path>`. Two execution options:**
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 

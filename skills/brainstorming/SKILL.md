@@ -29,7 +29,7 @@ You MUST create a task for each of these items and complete them in order:
 6. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope before persisting (see below)
 7. **Persist spec** — update/create GitHub issue or write local Markdown fallback (see After the Design)
 8. **User reviews persisted spec** — ask user to review the issue or spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+9. **Choose implementation path** — ask whether to start direct implementation or write an implementation plan
 
 ## Process Flow
 
@@ -45,6 +45,8 @@ digraph brainstorming {
     "Spec self-review\n(fix inline)" [shape=box];
     "Persist spec\n(issue or local Markdown)" [shape=box];
     "User reviews persisted spec?" [shape=diamond];
+    "Offer implementation choice" [shape=diamond];
+    "Direct implementation" [shape=doublecircle];
     "Invoke writing-plans skill" [shape=doublecircle];
 
     "Explore project context" -> "Visual questions ahead?";
@@ -59,11 +61,13 @@ digraph brainstorming {
     "Spec self-review\n(fix inline)" -> "Persist spec\n(issue or local Markdown)";
     "Persist spec\n(issue or local Markdown)" -> "User reviews persisted spec?";
     "User reviews persisted spec?" -> "Spec self-review\n(fix inline)" [label="changes requested"];
-    "User reviews persisted spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User reviews persisted spec?" -> "Offer implementation choice" [label="approved"];
+    "Offer implementation choice" -> "Direct implementation" [label="direct"];
+    "Offer implementation choice" -> "Invoke writing-plans skill" [label="plan"];
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal state is choosing the implementation path.** After the persisted SPEC is approved, ask whether to start direct implementation or write an implementation plan. Do not invoke implementation skills before the user chooses direct implementation or asks for a plan.
 
 ## The Process
 
@@ -159,14 +163,18 @@ Fix any issues inline. No need to re-review — just fix and move on.
 **User Review Gate:**
 After the spec review loop passes and the SPEC has been persisted, ask the user to review the persisted spec before proceeding:
 
-> "Spec persisted to `<issue-url-or-path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Spec persisted to `<issue-url-or-path>`. Please review it and let me know if you want any changes. Once you approve it, choose: 1. Direct implementation, or 2. Write implementation plan."
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
 **Implementation:**
 
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+After the user approves the persisted SPEC, offer two paths:
+
+1. **Direct implementation** - start development from the approved SPEC without writing a separate plan. Use this for small, low-risk changes with clear scope. Create a concise task checklist, follow applicable implementation skills such as test-driven-development, and verify before completion.
+2. **Write implementation plan** - invoke the writing-plans skill to create a detailed implementation plan. If the SPEC was persisted to a GitHub issue, tell writing-plans to post the plan as a comment on the issue.
+
+Recommend writing a plan for large, high-risk, multi-file, ambiguous, or long-running work. If the user chooses direct implementation, do not create a plan file.
 
 ## Key Principles
 
