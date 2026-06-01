@@ -32,6 +32,54 @@ Thanks!
 
 Installation differs by harness. If you use more than one, install Superpowers separately for each one.
 
+### Personal Fork
+
+This repository is the Membphis personal fork of Superpowers. The default branch is `dev`; install from this repository when you want the customized version rather than the upstream marketplace build.
+
+#### Codex
+
+- Register this repository as a Codex marketplace:
+
+  ```bash
+  codex plugin marketplace add https://github.com/membphis/superpowers
+  ```
+
+- Install the plugin from that marketplace:
+
+  ```bash
+  codex plugin add superpowers@membphis-superpowers
+  ```
+
+#### Claude Code
+
+- Register this repository as a Claude Code marketplace:
+
+  ```bash
+  /plugin marketplace add membphis/superpowers
+  ```
+
+- Install the plugin from that marketplace:
+
+  ```bash
+  /plugin install superpowers@membphis-superpowers
+  ```
+
+#### OpenCode
+
+- Add this fork to the `plugin` array in your `opencode.json`:
+
+  ```json
+  {
+    "plugin": ["superpowers@git+https://github.com/membphis/superpowers.git"]
+  }
+  ```
+
+- Or ask OpenCode to follow the install guide from the `dev` branch:
+
+  ```text
+  Fetch and follow instructions from https://raw.githubusercontent.com/membphis/superpowers/refs/heads/dev/.opencode/INSTALL.md
+  ```
+
 ### Claude Code
 
 Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
@@ -122,7 +170,7 @@ already use it in another harness.
 - Tell OpenCode:
 
   ```
-  Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
+  Fetch and follow instructions from https://raw.githubusercontent.com/membphis/superpowers/refs/heads/dev/.opencode/INSTALL.md
   ```
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)

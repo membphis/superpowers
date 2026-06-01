@@ -1,0 +1,20 @@
+{
+  "name": "membphis-superpowers",
+  "interface": {
+    "displayName": "Membphis Superpowers"
+  },
+  "plugins": [
+    {
+      "name": "superpowers",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    }
+  ]
+}

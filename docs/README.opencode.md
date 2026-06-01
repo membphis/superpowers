@@ -1,14 +1,14 @@
-# Superpowers for OpenCode
+# Membphis Superpowers for OpenCode
 
-Complete guide for using Superpowers with [OpenCode.ai](https://opencode.ai).
+Complete guide for using this Superpowers fork with [OpenCode.ai](https://opencode.ai).
 
 ## Installation
 
-Add superpowers to the `plugin` array in your `opencode.json` (global or project-level):
+Add this fork to the `plugin` array in your `opencode.json` (global or project-level):
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+  "plugin": ["superpowers@git+https://github.com/membphis/superpowers.git"]
 }
 ```
 
@@ -87,11 +87,11 @@ and Bun versions pin that resolved git dependency in a lockfile or cache, so a
 restart may not pick up the newest Superpowers commit. If updates do not appear,
 clear OpenCode's package cache or reinstall the plugin.
 
-To pin a specific version, use a branch or tag:
+To pin the default development branch explicitly:
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git#v5.0.3"]
+  "plugin": ["superpowers@git+https://github.com/membphis/superpowers.git#dev"]
 }
 ```
 
@@ -128,7 +128,7 @@ the plugin, try installing with system npm and pointing OpenCode at the local
 package:
 
 ```powershell
-npm install superpowers@git+https://github.com/obra/superpowers.git --prefix "$HOME\.config\opencode"
+npm install superpowers@git+https://github.com/membphis/superpowers.git --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:
@@ -152,6 +152,6 @@ Then use the installed package path in `opencode.json`:
 
 ## Getting Help
 
-- Report issues: https://github.com/obra/superpowers/issues
-- Main documentation: https://github.com/obra/superpowers
+- Report issues: https://github.com/membphis/superpowers/issues
+- Main documentation: https://github.com/membphis/superpowers
 - OpenCode docs: https://opencode.ai/docs/

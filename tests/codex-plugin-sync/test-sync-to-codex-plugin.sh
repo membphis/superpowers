@@ -174,6 +174,7 @@ write_upstream_fixture() {
     local with_pure_ignored="${2:-1}"
 
     mkdir -p \
+        "$repo/.agents/plugins" \
         "$repo/.codex-plugin" \
         "$repo/.private-journal" \
         "$repo/assets" \
@@ -210,6 +211,13 @@ EOF
 }
 EOF
 
+    cat > "$repo/.agents/plugins/marketplace.json" <<'EOF'
+{
+  "name": "fixture-marketplace",
+  "plugins": []
+}
+EOF
+
     cat > "$repo/assets/superpowers-small.svg" <<'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>
 EOF
@@ -229,6 +237,7 @@ EOF
     fi
 
     git -C "$repo" add \
+        .agents/plugins/marketplace.json \
         .codex-plugin/plugin.json \
         .gitignore \
         assets/app-icon.png \
@@ -537,6 +546,7 @@ main() {
     assert_contains "$preview_output" "Version:  $MANIFEST_VERSION" "Preview uses manifest version"
     assert_not_contains "$preview_output" "Version:  $PACKAGE_VERSION" "Preview does not use package.json version"
     assert_contains "$preview_section" ".codex-plugin/plugin.json" "Preview includes manifest path"
+    assert_not_contains "$preview_section" ".agents/plugins/marketplace.json" "Preview excludes Codex marketplace metadata"
     assert_contains "$preview_section" "assets/superpowers-small.svg" "Preview includes SVG asset"
     assert_contains "$preview_section" "assets/app-icon.png" "Preview includes PNG asset"
     assert_contains "$preview_section" ".private-journal/keep.txt" "Preview includes tracked ignored file"

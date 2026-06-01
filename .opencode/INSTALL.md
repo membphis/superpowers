@@ -1,4 +1,4 @@
-# Installing Superpowers for OpenCode
+# Installing Membphis Superpowers for OpenCode
 
 ## Prerequisites
 
@@ -6,11 +6,11 @@
 
 ## Installation
 
-Add superpowers to the `plugin` array in your `opencode.json` (global or project-level):
+Add this fork to the `plugin` array in your `opencode.json` (global or project-level):
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+  "plugin": ["superpowers@git+https://github.com/membphis/superpowers.git"]
 }
 ```
 
@@ -55,11 +55,11 @@ and Bun versions pin that resolved git dependency in a lockfile or cache, so a
 restart may not pick up the newest Superpowers commit. If updates do not appear,
 clear OpenCode's package cache or reinstall the plugin.
 
-To pin a specific version:
+To pin the default development branch explicitly:
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git#v5.0.3"]
+  "plugin": ["superpowers@git+https://github.com/membphis/superpowers.git#dev"]
 }
 ```
 
@@ -80,7 +80,7 @@ the plugin, try installing with system npm and pointing OpenCode at the local
 package:
 
 ```powershell
-npm install superpowers@git+https://github.com/obra/superpowers.git --prefix "$HOME\.config\opencode"
+npm install superpowers@git+https://github.com/membphis/superpowers.git --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:
@@ -106,5 +106,5 @@ When skills reference Claude Code tools:
 
 ## Getting Help
 
-- Report issues: https://github.com/obra/superpowers/issues
-- Full documentation: https://github.com/obra/superpowers/blob/main/docs/README.opencode.md
+- Report issues: https://github.com/membphis/superpowers/issues
+- Full documentation: https://github.com/membphis/superpowers/blob/dev/docs/README.opencode.md

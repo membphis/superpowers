@@ -1,9 +1,9 @@
 {
-  "name": "superpowers-dev",
-  "description": "Development marketplace for Superpowers core skills library",
+  "name": "membphis-superpowers",
+  "description": "Personal marketplace for Membphis Superpowers",
   "owner": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "YuanSheng Wang",
+    "email": "membphis@gmail.com"
   },
   "plugins": [
     {
@@ -12,8 +12,8 @@
       "version": "5.1.0",
       "source": "./",
       "author": {
-        "name": "Jesse Vincent",
-        "email": "jesse@fsck.com"
+        "name": "YuanSheng Wang",
+        "email": "membphis@gmail.com"
       }
     }
   ]
