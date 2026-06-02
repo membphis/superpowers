@@ -5,7 +5,7 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh implementer subagents, opening a draft PR early so CI starts, then passing the local quality gate and marking the PR ready while remote CI continues.
+Ensure isolated workspace, execute plan by dispatching fresh implementer subagents, opening a draft PR early so CI starts, then passing the local quality gate and marking the PR ready while remote CI continues.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
@@ -46,6 +46,7 @@ digraph when_to_use {
 digraph process {
     rankdir=TB;
 
+    "Use superpowers:using-git-worktrees\n(ensure isolated workspace)" [shape=box];
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
     "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
     "Implementer subagent asks questions?" [shape=diamond];
@@ -63,6 +64,7 @@ digraph process {
     "Push fixes to draft PR" [shape=box];
     "Use superpowers:finishing-a-development-branch\n(local quality gate + mark ready)" [shape=box style=filled fillcolor=lightgreen];
 
+    "Use superpowers:using-git-worktrees\n(ensure isolated workspace)" -> "Read plan, extract all tasks with full text, note context, create TodoWrite";
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
@@ -155,6 +157,8 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 ```
 You: I'm using Subagent-Driven Development to execute this plan.
 
+[Use superpowers:using-git-worktrees before reading the plan]
+[Confirm isolated workspace or that your human partner explicitly declined worktree setup]
 [Read plan or issue comment once]
 [Extract all 5 tasks with full text and context]
 [Create TodoWrite with all tasks]
@@ -244,6 +248,7 @@ Done!
 ## Red Flags
 
 **Never:**
+- Skip using-git-worktrees before reading or executing the plan
 - Start implementation on main/master branch without explicit user consent
 - Skip consolidated spec review or code quality review
 - Proceed with unfixed issues

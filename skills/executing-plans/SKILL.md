@@ -7,13 +7,19 @@ description: Use when you have a written implementation plan to execute in a sep
 
 ## Overview
 
-Load plan, review critically, execute all tasks, report when complete.
+Ensure isolated workspace, load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
 **Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
 ## The Process
+
+### Step 0: Ensure Isolated Workspace
+1. Announce: "I'm using the using-git-worktrees skill to set up an isolated workspace."
+2. **REQUIRED SUB-SKILL:** Use superpowers:using-git-worktrees
+3. Confirm you are in an isolated workspace or that your human partner explicitly declined worktree setup
+4. Do not read or execute the plan, create a branch, or edit files until isolation is resolved
 
 ### Step 1: Load and Review Plan
 1. Read plan file
@@ -60,6 +66,7 @@ After all tasks complete and verified:
 - Don't skip verifications
 - Reference skills when plan says to
 - Stop when blocked, don't guess
+- Never skip using-git-worktrees before reading or executing the plan
 - Never start implementation on main/master branch without explicit user consent
 
 ## Integration
