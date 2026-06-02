@@ -5,11 +5,11 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh implementer subagents, opening a draft PR early so CI runs while consolidated reviews happen, then fixing reviewer findings and CI failures before marking the PR ready.
+Execute plan by dispatching fresh implementer subagents, opening a draft PR early so CI starts, then passing the local quality gate and marking the PR ready while remote CI continues.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh implementer per task + early draft PR/CI + consolidated reviews = fast flow with strong final gates.
+**Core principle:** Fresh implementer per task + early draft PR/CI + local quality gate = fast flow with strong final gates.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
@@ -61,9 +61,7 @@ digraph process {
     "Fix spec/quality findings" [shape=box];
     "Rerun affected local checks" [shape=box];
     "Push fixes to draft PR" [shape=box];
-    "CI green?" [shape=diamond];
-    "Fix CI failures until green" [shape=box];
-    "Use superpowers:finishing-a-development-branch\n(final readiness check + mark ready)" [shape=box style=filled fillcolor=lightgreen];
+    "Use superpowers:finishing-a-development-branch\n(local quality gate + mark ready)" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
@@ -84,10 +82,7 @@ digraph process {
     "Rerun affected local checks" -> "Push fixes to draft PR";
     "Push fixes to draft PR" -> "Dispatch consolidated spec reviewer" [label="if spec changed"];
     "Push fixes to draft PR" -> "Dispatch code quality reviewer" [label="if quality changed"];
-    "Reviewer findings?" -> "CI green?" [label="no"];
-    "CI green?" -> "Fix CI failures until green" [label="no"];
-    "Fix CI failures until green" -> "Rerun affected local checks";
-    "CI green?" -> "Use superpowers:finishing-a-development-branch\n(final readiness check + mark ready)" [label="yes"];
+    "Reviewer findings?" -> "Use superpowers:finishing-a-development-branch\n(local quality gate + mark ready)" [label="no"];
 }
 ```
 
@@ -96,14 +91,13 @@ digraph process {
 After all implementer tasks finish local commits:
 
 1. Run cheap local smoke checks (`git diff --check`, formatting checks, focused tests, or the fastest meaningful project check).
-2. Push the branch and open draft PR to start CI. Use `gh pr create --draft` when GitHub CLI is available.
+2. Push the branch and open draft PR to start CI. Use `gh pr create --draft` when GitHub CLI is available. After opening the draft PR, record the full GitHub PR URL for result summaries and later handoffs.
 3. While CI runs, dispatch a consolidated spec reviewer with the full SPEC/plan and the complete branch diff.
 4. While CI runs, dispatch a code quality reviewer with the full branch diff and implementation context.
 5. Fix blocking spec and quality findings, rerun affected local checks, commit, and push fixes to the draft PR.
-6. Watch CI and fix CI failures until green.
-7. Use `superpowers:finishing-a-development-branch` for the final readiness check and to mark PR ready.
+6. Use `superpowers:finishing-a-development-branch` to run the local quality gate and mark the PR ready.
 
-CI and reviewer subagents are both review mechanisms. CI checks mechanical facts; reviewers check requirements and engineering judgment.
+CI and reviewer subagents are both review mechanisms. CI checks mechanical facts remotely; reviewers check requirements and engineering judgment locally. Do not wait for remote CI before marking the PR ready after the local quality gate passes.
 
 ## Model Selection
 
@@ -207,8 +201,7 @@ Spec reviewer: ❌ Missing progress reporting required by SPEC
 [Dispatch code quality reviewer while CI runs]
 Code reviewer: Important: Magic number (100)
 [Fix both findings, rerun affected checks, commit, push]
-[Watch CI and fix failures until green]
-[Use finishing-a-development-branch for final readiness check]
+[Use finishing-a-development-branch for local quality gate + ready]
 
 Done!
 ```
@@ -261,8 +254,8 @@ Done!
 - Accept "close enough" on spec compliance (consolidated spec reviewer found issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
 - Let implementer self-review replace actual review (both are needed)
-- Mark PR ready before CI is green and reviewer findings are resolved
-- Leave draft PR CI red without fixing or explaining the blocker
+- Mark PR ready before local reviewer findings are resolved
+- Ignore CI failures after the PR is ready; fix or explain them when they appear
 
 **If subagent asks questions:**
 - Answer clearly and completely

@@ -34,6 +34,7 @@ For issue comments:
 3. Include the complete implementation plan in one comment when possible.
 4. If the GitHub write fails, explain the failure and ask whether to retry, write local Markdown, or stop.
 5. Do not claim the plan was posted unless the issue comment write succeeded.
+6. In result summaries and handoffs, identify the target with its full GitHub issue URL. Short `#123` references are fine for intermediate progress, but not for the final persisted-plan summary.
 
 ## Scope Check
 
@@ -75,7 +76,7 @@ Plans are verification-first, not TDD-first.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. The recommended flow is: implement tasks with fresh subagents, run cheap local smoke checks, open a draft PR so CI starts, run consolidated reviews while CI runs, fix findings and CI failures, then mark the PR ready. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. The recommended flow is: implement tasks with fresh subagents, run cheap local smoke checks, open a draft PR so CI starts, run consolidated reviews while CI runs, fix local findings, then pass the local quality gate and mark the PR ready while remote CI continues. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -162,7 +163,9 @@ After persisting the plan, offer execution choice:
 
 **"Plan complete and persisted to `<issue-url-or-path>`. Two execution options:**
 
-**1. Subagent-Driven (recommended)** - I dispatch fresh implementer subagents, open a draft PR to start CI, run consolidated spec and code quality reviews, then fix findings and CI failures before marking ready
+When saying "Plan complete" for an issue-backed plan, `<issue-url-or-path>` must be the full GitHub issue URL, not only `#123`.
+
+**1. Subagent-Driven (recommended)** - I dispatch fresh implementer subagents, open a draft PR to start CI, run consolidated spec and code quality reviews, then fix local findings, pass the local quality gate, and mark the PR ready while remote CI continues
 
 **2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
 

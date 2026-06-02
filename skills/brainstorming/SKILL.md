@@ -76,6 +76,7 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
+- If decomposition creates multiple sub-project issues, the final created-issues summary must list each sub-project issue with its full GitHub issue URL.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions
@@ -144,6 +145,13 @@ GitHub tooling:
 - If no write-capable GitHub tool is available, or if authentication, permission, network, repository, or issue writes fail, explain the failure and fall back to the local Markdown spec flow unless the user chooses to stop.
 - Never claim that an issue was created or updated unless the write operation succeeded.
 
+GitHub result reporting:
+
+- For result summaries after creating or updating GitHub issues, include the full GitHub issue URL (`https://github.com/<owner>/<repo>/issues/<number>`). Do not report only `#123` in these summaries.
+- A short `#123` reference is fine for intermediate progress, reasoning, and compact cross-references.
+- If creating several sub-project issues during decomposition, the final summary must include the full GitHub issue URL for every created issue.
+- Prefer the URL returned by the GitHub tool. If only a number is returned, construct the URL from the target repository and issue number.
+
 Local Markdown spec flow:
 
 - Write the validated SPEC to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
@@ -164,6 +172,8 @@ Fix any issues inline. No need to re-review — just fix and move on.
 After the spec review loop passes and the SPEC has been persisted, ask the user to review the persisted spec before proceeding:
 
 > "Spec persisted to `<issue-url-or-path>`. Please review it and let me know if you want any changes. Once you approve it, choose: 1. Direct implementation, or 2. Write implementation plan."
+
+If the SPEC was persisted to a GitHub issue, `<issue-url-or-path>` must be the full GitHub issue URL, not a short `#123` reference.
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 

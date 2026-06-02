@@ -9,7 +9,7 @@ description: Use when implementation is complete and you need to finish integrat
 
 Guide completion of development work by verifying readiness, marking draft PRs ready, or presenting clear integration options.
 
-**Core principle:** Verify readiness → If draft PR exists, mark ready → Otherwise present options → Execute choice → Clean up.
+**Core principle:** Run the local quality gate → If draft PR exists, mark ready → Otherwise present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -23,40 +23,35 @@ First check whether the current branch already has a PR:
 gh pr view --json url,isDraft,state,statusCheckRollup 2>/dev/null
 ```
 
-**If a draft PR exists:** skip the option menu and go to Step 2 final readiness check.
+**If a draft PR exists:** skip the option menu and go to Step 2 local quality gate.
 
-**If a non-draft PR exists:** run Step 2 final readiness check and report the PR is already ready if all checks pass.
+**If a non-draft PR exists:** run Step 2 local quality gate and report the PR is already ready if all checks pass.
 
 **If no PR exists:** continue through the standard branch finishing menu after verifying tests.
 
-### Step 2: Final Readiness Check
+**PR result reporting:** In final result summaries, created, existing, or ready PRs must be reported with the full GitHub PR URL (`https://github.com/<owner>/<repo>/pull/<number>`). A short `#123` reference is fine for intermediate progress, but not for the final PR result.
 
-Use this final readiness check before marking a draft PR ready or before offering merge/PR completion options:
+### Step 2: Local Quality Gate
+
+Use this local quality gate before marking a draft PR ready or before offering merge/PR completion options:
 
 - No uncommitted changes (`git status --short` is empty)
 - Cheap local smoke checks still pass
-- Required project tests pass or the user explicitly accepted relying on CI
-- Draft PR CI is green when a PR exists
-- Consolidated spec reviewer approved
-- Code quality reviewer approved
-- No unresolved blocking reviewer findings remain
+- Required project tests pass, or the user explicitly accepted relying on CI for tests that cannot be run locally
+- No known local blockers remain, including failed local checks or unresolved local reviewer findings from the current workflow
 - PR body links the issue/SPEC or otherwise explains the requirement source
 
-For a draft PR, verify CI with the available GitHub tooling, such as:
+Remote CI and GitHub checks are not part of this local quality gate. Do not wait for remote CI before marking the PR ready; CI can continue running on a ready PR.
 
-```bash
-gh pr checks --watch
-```
+If any local quality gate item fails, stop and report the exact blocker. Do not mark PR ready.
 
-If any readiness item fails, stop and report the exact blocker. Do not mark PR ready.
-
-**If a draft PR passes readiness:** mark it ready:
+**If a draft PR passes the local quality gate:** mark it ready:
 
 ```bash
 gh pr ready
 ```
 
-Then report the PR URL and stop. Do not present the standard option menu.
+Then report the full GitHub PR URL and stop. Do not present the standard option menu.
 
 ### Step 3: Verify Tests
 
@@ -179,7 +174,7 @@ EOF
 ```
 
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
-After the draft PR is created, run the final readiness check before marking it ready.
+After the draft PR is created, run the local quality gate before marking it ready.
 
 #### Option 3: Keep As-Is
 
@@ -250,9 +245,13 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - **Problem:** Merge broken code, create failing PR
 - **Fix:** Always verify tests before offering options
 
-**Marking draft PR ready too early**
-- **Problem:** CI, spec review, or code quality review still has blocking issues
-- **Fix:** Run the final readiness check and stop on any blocker
+**Marking draft PR ready before local checks**
+- **Problem:** Worktree is dirty, local tests are failing, or known local reviewer findings remain
+- **Fix:** Run the local quality gate and stop on any local blocker
+
+**Waiting for remote CI before ready**
+- **Problem:** A draft PR stays draft even though local quality gate passed
+- **Fix:** Do not wait for remote CI before marking ready; CI can continue on the ready PR
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" is ambiguous
