@@ -17,7 +17,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Default plan location:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan destination override this default)
-- If invoked from an approved SPEC stored in a GitHub issue, comment the plan on that issue instead of writing a local plan file, unless the user asks for local Markdown.
+- If invoked from a GitHub issue SPEC that the user chose to proceed from, comment the plan on that issue instead of writing a local plan file, unless the user asks for local Markdown.
 
 ## Plan Persistence Destination
 
@@ -76,7 +76,7 @@ Plans are verification-first, not TDD-first.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans. The recommended flow is: implement tasks with fresh subagents, run cheap local smoke checks, open a draft PR so CI starts, run consolidated reviews while CI runs, fix local findings, then pass the local quality gate and mark the PR ready while remote CI continues. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans when executing this plan. For subagent-driven execution, implement tasks with fresh subagents, run cheap local smoke checks, open a draft PR so CI starts, run consolidated reviews while CI runs, fix local findings, then pass the local quality gate and mark the PR ready while remote CI continues. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -159,17 +159,35 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After persisting the plan, offer execution choice:
+After persisting the plan, offer execution choice.
 
-**"Plan complete and persisted to `<issue-url-or-path>`. Two execution options:**
+Before asking the user to choose, state your recommended execution path and a brief plan-specific reason.
+
+Base the recommendation on task independence, task count, coupling, file count, review/CI value, subagent availability, and need for continuous context.
+
+Recommend Subagent-Driven for multiple independent or parallelizable tasks, multi-file work, high review value, or work that benefits from early draft PR/CI.
+
+Recommend Inline Execution for tightly coupled, short, sequential, context-heavy work, missing subagent support, or explicit user preference.
+
+Always present the execution recommendation as a 1/2 numbered choice, not a free-form question.
+
+Ask the user to reply with 1 or 2.
 
 When saying "Plan complete" for an issue-backed plan, `<issue-url-or-path>` must be the full GitHub issue URL, not only `#123`.
 
-**1. Subagent-Driven (recommended)** - I dispatch fresh implementer subagents, open a draft PR to start CI, run consolidated spec and code quality reviews, then fix local findings, pass the local quality gate, and mark the PR ready while remote CI continues
+The other path is whichever execution path you did not recommend. Use this prompt shape:
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
+> "Plan complete and persisted to `<issue-url-or-path>`.
+>
+> My recommendation: <Subagent-Driven or Inline Execution>, because <plan-specific reason>.
+>
+> Choose:
+> 1. Execute with the recommended path: <recommended option>
+> 2. Execute with the other path: <other option>
+>
+> If the recommended path is Subagent-Driven, I dispatch fresh implementer subagents, open a draft PR to start CI, run consolidated spec and code quality reviews, then fix local findings, pass the local quality gate, and mark the PR ready while remote CI continues. If the recommended path is Inline Execution, I execute tasks in this session using executing-plans with checkpoints.
+>
+> Please reply with 1 or 2."
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development

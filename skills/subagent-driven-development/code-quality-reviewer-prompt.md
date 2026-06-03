@@ -11,7 +11,7 @@ Task tool (general-purpose):
   Use template at requesting-code-review/code-reviewer.md
 
   DESCRIPTION: [summary of complete branch/PR implementation]
-  PLAN_OR_REQUIREMENTS: [approved SPEC and implementation plan]
+  PLAN_OR_REQUIREMENTS: [accepted SPEC and implementation plan]
   BASE_SHA: [base branch or PR base]
   HEAD_SHA: [current commit]
 ```

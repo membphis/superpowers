@@ -169,22 +169,56 @@ Before persisting the SPEC to a GitHub issue or local Markdown, look at it with 
 Fix any issues inline. No need to re-review — just fix and move on.
 
 **User Review Gate:**
-After the spec review loop passes and the SPEC has been persisted, ask the user to review the persisted spec before proceeding:
+After the spec review loop passes and the SPEC has been persisted, ask the user to review the persisted spec before proceeding. Include the implementation-path recommendation and numbered choices in the same message:
 
-> "Spec persisted to `<issue-url-or-path>`. Please review it and let me know if you want any changes. Once you approve it, choose: 1. Direct implementation, or 2. Write implementation plan."
+> "Spec persisted to `<issue-url-or-path>`. Please review it.
+>
+> My recommendation: <Direct implementation or Write implementation plan>, because <task-specific reason>.
+>
+> Choose:
+> 1. Proceed with the current SPEC and use the recommended path: <recommended option>
+> 2. Proceed with the current SPEC and use the other path: <other option>
+> 3. Request SPEC changes before proceeding
+>
+> Please reply with 1, 2, or 3."
 
 If the SPEC was persisted to a GitHub issue, `<issue-url-or-path>` must be the full GitHub issue URL, not a short `#123` reference.
 
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+Wait for the user's response. If they choose 1 or 2, treat the current SPEC as accepted for implementation and proceed down that path. If they choose 3 or request changes in prose, make the changes and re-run the spec review loop. Only proceed once the user chooses to proceed.
 
 **Implementation:**
 
-After the user approves the persisted SPEC, offer two paths:
+When the user is deciding how to proceed from the current SPEC, offer two paths:
 
-1. **Direct implementation** - start development from the approved SPEC without writing a separate plan. Use this for small, low-risk changes with clear scope. Create a concise task checklist, define the verification approach up front, and verify before completion.
+1. **Direct implementation** - start development from the current accepted SPEC without writing a separate plan. Use this for small, low-risk changes with clear scope. Create a concise task checklist, define the verification approach up front, and verify before completion.
 2. **Write implementation plan** - invoke the writing-plans skill to create a detailed implementation plan. If the SPEC was persisted to a GitHub issue, tell writing-plans to post the plan as a comment on the issue.
 
-Recommend writing a plan for large, high-risk, multi-file, ambiguous, or long-running work. If the user chooses direct implementation, do not create a plan file.
+Before asking the user to choose, state your recommended implementation path and a brief task-specific reason.
+
+Base the recommendation on task size, risk, file count, ambiguity, expected duration, and PR sensitivity.
+
+Recommend Direct implementation for small, low-risk, clearly scoped changes.
+
+Recommend Write implementation plan for large, high-risk, multi-file, ambiguous, long-running, or PR-sensitive work.
+
+Always present the recommendation as a 1/2/3 numbered choice, not a free-form question.
+
+Ask the user to reply with 1, 2, or 3.
+
+The other path is whichever implementation path you did not recommend. Use this prompt shape:
+
+> "Spec persisted to `<issue-url-or-path>`. Please review it.
+>
+> My recommendation: <Direct implementation or Write implementation plan>, because <task-specific reason>.
+>
+> Choose:
+> 1. Proceed with the current SPEC and use the recommended path: <recommended option>
+> 2. Proceed with the current SPEC and use the other path: <other option>
+> 3. Request SPEC changes before proceeding
+>
+> Please reply with 1, 2, or 3."
+
+If the user chooses direct implementation, do not create a plan file.
 
 ## Key Principles
 

@@ -2,17 +2,17 @@
 
 Use this template when dispatching a consolidated spec compliance reviewer subagent after implementation tasks are complete.
 
-**Purpose:** Verify the branch/PR implements the approved SPEC and plan (nothing more, nothing less)
+**Purpose:** Verify the branch/PR implements the accepted SPEC and plan (nothing more, nothing less)
 
 ```
 Task tool (general-purpose):
   description: "Review consolidated spec compliance"
   prompt: |
-    You are reviewing whether the completed implementation matches its approved SPEC and implementation plan.
+    You are reviewing whether the completed implementation matches the accepted SPEC and implementation plan.
 
     ## What Was Requested
 
-    [FULL TEXT of approved SPEC and implementation plan]
+    [FULL TEXT of accepted SPEC and implementation plan]
 
     ## What Was Implemented
 
