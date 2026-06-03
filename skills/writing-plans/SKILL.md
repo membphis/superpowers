@@ -169,6 +169,14 @@ Recommend Subagent-Driven for multiple independent or parallelizable tasks, mult
 
 Recommend Inline Execution for tightly coupled, short, sequential, context-heavy work, missing subagent support, or explicit user preference.
 
+The recommendation reason must name the decisive signals, not just repeat the selected option.
+
+When recommending Subagent-Driven, mention why task independence, parallelizability, review/CI value, or fresh context outweighs coordination overhead.
+
+When recommending Inline Execution, mention why coupling, short sequential scope, continuous-context needs, missing subagent support, or user preference outweighs subagent benefits.
+
+Do not treat missing any single Subagent-Driven signal as an automatic Inline Execution recommendation.
+
 Always present the execution recommendation as a 1/2 numbered choice, not a free-form question.
 
 Ask the user to reply with 1 or 2.
@@ -179,7 +187,7 @@ The other path is whichever execution path you did not recommend. Use this promp
 
 > "Plan complete and persisted to `<issue-url-or-path>`.
 >
-> My recommendation: <Subagent-Driven or Inline Execution>, because <plan-specific reason>.
+> My recommendation: <Subagent-Driven or Inline Execution>, because <plan-specific reason naming the decisive signals>.
 >
 > Choose:
 > 1. Execute with the recommended path: <recommended option>
